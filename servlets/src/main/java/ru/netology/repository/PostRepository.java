@@ -1,20 +1,21 @@
 package ru.netology.repository;
 
+import org.springframework.stereotype.Repository;
 import ru.netology.exception.NotFoundException;
 import ru.netology.model.Post;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Repository
 public class PostRepository {
   private final ConcurrentHashMap<Long, Post> posts = new ConcurrentHashMap<>();
   private final AtomicLong idCounter = new AtomicLong(0);
 
   public List<Post> all() {
-    return new ArrayList<>(posts.values());
+    return List.copyOf(posts.values());
   }
 
   public Optional<Post> getById(long id) {
@@ -23,18 +24,10 @@ public class PostRepository {
 
   public Post save(Post post) {
     if (post.getId() == 0) {
-      long id = idCounter.incrementAndGet();
-      post.setId(id);
-      posts.put(id, post);
-      return post;
+      post.setId(idCounter.incrementAndGet());
     }
-    
-    if (posts.containsKey(post.getId())) {
-      posts.put(post.getId(), post);
-      return post;
-    }
-    
-    throw new NotFoundException("Post with id " + post.getId() + " not found");
+    posts.put(post.getId(), post);
+    return post;
   }
 
   public void removeById(long id) {
